@@ -8,9 +8,11 @@ import scala.collection.Seq
 package object nebuloLabTestMonitor {
 
   sealed trait HostStatus
+  case object Running extends HostStatus
   case object Up extends HostStatus
   case object Down extends HostStatus
 
   trait Message
-  case class StartNetwork(val hosts : Seq[String]) extends Message
+  case class StartNetwork(val buildPath : String,
+                          val hosts : Seq[(String, Int)]) extends Message
 }

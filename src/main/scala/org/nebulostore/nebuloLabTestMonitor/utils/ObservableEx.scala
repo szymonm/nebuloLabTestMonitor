@@ -20,7 +20,7 @@ object ObservableEx {
     val rs = ReplaySubject[T]()
     f.onComplete {
       case Success(s) => rs.onNext(s)
-    		  			 rs.onCompleted()
+    		  			         rs.onCompleted()
       case Failure(t) => rs.onError(t)
     }
     rs
