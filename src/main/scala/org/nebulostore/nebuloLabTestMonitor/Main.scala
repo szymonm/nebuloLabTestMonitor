@@ -163,13 +163,14 @@ class Controller(val username : String, nebuloPath : String) extends Actor with 
 object Main extends App {
   val actorSystem = ActorSystem("nebuloLabTestMonitor")
 //
-
+  val homeDir = System.getProperty("user.home")
+  println(homeDir)
   val hosts = Seq("orange01", "orange02", "orange03").zipWithIndex
     .map{case (x, y) => (x, y + 1)}
 
   val controller = actorSystem.actorOf(Props(classOf[Controller], "sm262956",
-    "/Users/szymonmatejczyk/nebulo"), "controller")
+    s"$homeDir/nebulo"), "controller")
 
-  controller ! StartNetwork("/Users/szymonmatejczyk/nebulo/nebulostore/build/jar",
+  controller ! StartNetwork(s"$homeDir/nebulo/nebulostore/build/jar",
     hosts)
 }
