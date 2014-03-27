@@ -46,7 +46,7 @@ class Controller(val username : String, nebuloPath : String) extends Actor with 
 
   def PREPARE_DIRS_CMD(host : String) : String = {
     val path = nebuloPath
-    def mkdir(dir : String) = "mkdir -p $path$dir"
+    def mkdir(dir : String) = s"mkdir -p $path$dir"
     def ln(from : String, to : String) = s"ln -s $to $from"
     List(mkdir(s"lib"), mkdir(s"$host/resources"), ln(nebuloPath + host + "/lib", nebuloPath + "/lib"))
       .mkString(" && ")
@@ -64,11 +64,11 @@ class Controller(val username : String, nebuloPath : String) extends Actor with 
     sshCommand(username, host, nebuloPath, RUN_CMD(host))
 
   def startNebulo(host : String) : Future[Iterable[String]] = {
-    val p = Promise[Iterable[String]]
+    val p = Promise[Iterable[String]]()
     future {
       val output = mutable.Queue[String]()
       val processLogger = ProcessLogger(line => output.enqueue(line))
-      startHostCmd(host) ! (processLogger) match {
+      startHostCmd(host) ! processLogger match {
         case 0 => p.success(output)
         case _ => p.failure(new Exception(output.foldLeft("")(_+_)))
       }
