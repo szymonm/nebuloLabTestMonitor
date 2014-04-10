@@ -13,11 +13,15 @@ import scala.util.Success
 import scala.util.Failure
 import org.nebulostore.nebuloLabTestMonitor.utils.ObservableEx
 import rx.lang.scala.schedulers.ThreadPoolForIOScheduler
+import sun.misc.{Signal, SignalHandler}
 
 
 /**
  * Created by szymonmatejczyk on 20.01.2014.
  */
+
+// todo: option to aviod recompilation
+//
 
 class Controller(val username : String, nebuloPath : String) extends Actor with ActorLogging {
 
@@ -115,7 +119,7 @@ class Controller(val username : String, nebuloPath : String) extends Actor with 
       host => future {
         sshCommand(username, host, nebuloPath, KILL_CMD).!
       }.recover{
-        case e : Throwable => //log.warning(s"Killing failed ${e.toString}")
+        case e : Throwable => log.warning(s"Killing failed ${e.toString}")
       }
     }
   }
@@ -124,6 +128,7 @@ class Controller(val username : String, nebuloPath : String) extends Actor with 
 
   def receive: Actor.Receive = {
     case StartNetwork(buildsPath, hostsList) =>
+      log.debug(s"Controller started.")
       prepareHosts(buildsPath, hostsList)
       val hosts = hostsList.map(_._1)
       hosts.foreach{
@@ -157,7 +162,10 @@ class Controller(val username : String, nebuloPath : String) extends Actor with 
         case _ => ()
       }
       )
+    case ShutdownNodes => killNebulo(runningHosts.toSeq)
   }
+
+
 }
 
 object Main extends App {
@@ -172,4 +180,14 @@ object Main extends App {
 
   controller ! StartNetwork(s"$homeDir/nebulo/nebulostore/build/jar",
     hosts)
+
+  class IntHandler extends SignalHandler {
+    def handle(signal : Signal) {
+      if (signal.getName == "INT") {
+        println("INT signal caught. Terminating...")
+        controller ! ShutdownNodes
+      }
+    }
+  }
+  Signal.handle(new Signal("INT"), new IntHandler)
 }

@@ -13,6 +13,7 @@ package object nebuloLabTestMonitor {
   case object Down extends HostStatus
 
   trait Message
-  case class StartNetwork(val buildPath : String,
-                          val hosts : Seq[(String, Int)]) extends Message
+  case class StartNetwork(buildPath : String,
+                          hosts : Seq[(String, Int)]) extends Message
+  case object ShutdownNodes extends Message
 }
